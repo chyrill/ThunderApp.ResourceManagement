@@ -106,32 +106,7 @@ module.exports = require("mongoose");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Authorization = undefined;
-
-let Authorization = exports.Authorization = (() => {
-  var _ref = _asyncToGenerator(function* (bearer) {
-    var data = {};
-    try {
-      var authCode = bearer.split(" ")[1];
-      yield _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(function (response) {
-        data = response.data;
-      }).catch(function (err) {
-
-        data = err.response.data;
-      });
-      return data;
-    } catch (e) {
-      console.log(e);
-      result.message = e;
-      result.successful = false;
-      return result;
-    }
-  });
-
-  return function Authorization(_x) {
-    return _ref.apply(this, arguments);
-  };
-})();
+exports.Authorization = Authorization;
 
 var _axios = __webpack_require__(8);
 
@@ -143,9 +118,24 @@ var _Result2 = _interopRequireDefault(_Result);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function Authorization(bearer) {
+  var data = {};
+  try {
+    var authCode = bearer.split(" ")[1];
+    await _axios2.default.post('http://localhost:3000/api/v1/userLogin/authorize', { Authorization: authCode }).then(response => {
+      data = response.data;
+    }).catch(err => {
 
-;
+      data = err.response.data;
+    });
+    return data;
+  } catch (e) {
+    console.log(e);
+    result.message = e;
+    result.successful = false;
+    return result;
+  }
+};
 
 /***/ }),
 /* 4 */
@@ -481,43 +471,8 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.bulkUpload = exports.upload = undefined;
-
-let upload = exports.upload = (() => {
-  var _ref = _asyncToGenerator(function* (req, res) {
-    var result = new _Result2.default();
-    Upload(req, res, function (err) {
-      console.log(req.file);
-      if (err) {
-        result.message = err;
-        result.successful = false;
-        result.model = null;
-
-        return res.status(400).json(result);
-      } else {
-        result.message = 'Successfully uploaded file';
-        result.successful = true;
-        result.model = 'http://' + req.get('host') + '/uploads/' + req.file.filename;
-
-        return res.status(200).json(result);
-      }
-    });
-  });
-
-  return function upload(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-let bulkUpload = exports.bulkUpload = (() => {
-  var _ref2 = _asyncToGenerator(function* (req, res) {
-    try {} catch (e) {}
-  });
-
-  return function bulkUpload(_x3, _x4) {
-    return _ref2.apply(this, arguments);
-  };
-})();
+exports.upload = upload;
+exports.bulkUpload = bulkUpload;
 
 var _Result = __webpack_require__(1);
 
@@ -533,8 +488,6 @@ var _path2 = _interopRequireDefault(_path);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
 const storage = _multer2.default.diskStorage({
   destination: './public/uploads',
   filename: function (req, file, cb) {
@@ -543,6 +496,30 @@ const storage = _multer2.default.diskStorage({
 });
 //req.file.orginalname+'-'+Date.now()+path.extname(file.originalname)
 const Upload = (0, _multer2.default)({ storage: storage }).single('uploaddata');
+
+async function upload(req, res) {
+  var result = new _Result2.default();
+  Upload(req, res, err => {
+    console.log(req.file);
+    if (err) {
+      result.message = err;
+      result.successful = false;
+      result.model = null;
+
+      return res.status(400).json(result);
+    } else {
+      result.message = 'Successfully uploaded file';
+      result.successful = true;
+      result.model = 'http://' + req.get('host') + '/uploads/' + req.file.filename;
+
+      return res.status(200).json(result);
+    }
+  });
+}
+
+async function bulkUpload(req, res) {
+  try {} catch (e) {}
+}
 
 /***/ }),
 /* 19 */
@@ -586,103 +563,8 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getAll = exports.create = undefined;
-
-let create = exports.create = (() => {
-    var _ref = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            var ifAlreadyExist = yield checkIfExist(req.body.Name);
-
-            if (ifAlreadyExist.successful) {
-                result.successful = false;
-                result.model = req.body;
-                result.message = ifAlreadyExist.message;
-
-                return res.status(400).json(result);
-            }
-
-            var createRes = yield _city2.default.create(req.body);
-
-            result.successful = true;
-            result.model = createRes;
-            result.message = 'Successfully added record';
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.successful = false;
-            result.model = req.body;
-            result.message = e.errmsg;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function create(_x, _x2) {
-        return _ref.apply(this, arguments);
-    };
-})();
-
-let getAll = exports.getAll = (() => {
-    var _ref2 = _asyncToGenerator(function* (req, res) {
-        var result = new _SearchResult2.default();
-
-        try {
-            var searchItems = yield _city2.default.find();
-
-            result.items = searchItems;
-            result.totalcount = searchItems.length;
-            result.pages = 1;
-            result.message = 'Succesfully retrieve records';
-            result.successful = true;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.items = null;
-            result.totalcount = 0;
-            result.pages = 1;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function getAll(_x3, _x4) {
-        return _ref2.apply(this, arguments);
-    };
-})();
-
-let checkIfExist = (() => {
-    var _ref3 = _asyncToGenerator(function* (name) {
-        var result = new _Result2.default();
-
-        try {
-            var cityRes = yield _city2.default.find({ Name: name });
-
-            if (cityRes.length > 0) {
-                result.successful = true;
-                result.message = 'City already Exist';
-                return result;
-            } else {
-                result.successful = false;
-                result.message = 'City does not exist';
-
-                return result;
-            }
-        } catch (e) {
-            result.successful = false;
-            result.message = e;
-
-            return result;
-        }
-    });
-
-    return function checkIfExist(_x5) {
-        return _ref3.apply(this, arguments);
-    };
-})();
+exports.create = create;
+exports.getAll = getAll;
 
 var _city = __webpack_require__(22);
 
@@ -710,7 +592,83 @@ var _requestIp2 = _interopRequireDefault(_requestIp);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var ifAlreadyExist = await checkIfExist(req.body.Name);
+
+        if (ifAlreadyExist.successful) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = ifAlreadyExist.message;
+
+            return res.status(400).json(result);
+        }
+
+        var createRes = await _city2.default.create(req.body);
+
+        result.successful = true;
+        result.model = createRes;
+        result.message = 'Successfully added record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.successful = false;
+        result.model = req.body;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getAll(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var searchItems = await _city2.default.find();
+
+        result.items = searchItems;
+        result.totalcount = searchItems.length;
+        result.pages = 1;
+        result.message = 'Succesfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = null;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function checkIfExist(name) {
+    var result = new _Result2.default();
+
+    try {
+        var cityRes = await _city2.default.find({ Name: name });
+
+        if (cityRes.length > 0) {
+            result.successful = true;
+            result.message = 'City already Exist';
+            return result;
+        } else {
+            result.successful = false;
+            result.message = 'City does not exist';
+
+            return result;
+        }
+    } catch (e) {
+        result.successful = false;
+        result.message = e;
+
+        return result;
+    }
+}
 
 /***/ }),
 /* 22 */
@@ -779,103 +737,8 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getAll = exports.create = undefined;
-
-let create = exports.create = (() => {
-    var _ref = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            var ifAlreadyExist = yield checkIfExist(req.body.Name);
-
-            if (ifAlreadyExist.successful) {
-                result.successful = false;
-                result.model = req.body;
-                result.message = ifAlreadyExist.message;
-
-                return res.status(400).json(result);
-            }
-
-            var createRes = yield _country2.default.create(req.body);
-
-            result.successful = true;
-            result.model = createRes;
-            result.message = 'Successfully added record';
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.successful = false;
-            result.model = req.body;
-            result.message = e.errmsg;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function create(_x, _x2) {
-        return _ref.apply(this, arguments);
-    };
-})();
-
-let getAll = exports.getAll = (() => {
-    var _ref2 = _asyncToGenerator(function* (req, res) {
-        var result = new _SearchResult2.default();
-
-        try {
-            var searchItems = yield _country2.default.find();
-
-            result.items = searchItems;
-            result.totalcount = searchItems.length;
-            result.pages = 1;
-            result.message = 'Succesfully retrieve records';
-            result.successful = true;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.items = null;
-            result.totalcount = 0;
-            result.pages = 1;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function getAll(_x3, _x4) {
-        return _ref2.apply(this, arguments);
-    };
-})();
-
-let checkIfExist = (() => {
-    var _ref3 = _asyncToGenerator(function* (name) {
-        var result = new _Result2.default();
-
-        try {
-            var cityRes = yield _country2.default.find({ Name: name });
-
-            if (cityRes.length > 0) {
-                result.successful = true;
-                result.message = 'City already Exist';
-                return result;
-            } else {
-                result.successful = false;
-                result.message = 'City does not exist';
-
-                return result;
-            }
-        } catch (e) {
-            result.successful = false;
-            result.message = e;
-
-            return result;
-        }
-    });
-
-    return function checkIfExist(_x5) {
-        return _ref3.apply(this, arguments);
-    };
-})();
+exports.create = create;
+exports.getAll = getAll;
 
 var _country = __webpack_require__(26);
 
@@ -895,7 +758,83 @@ var _QueryFilters = __webpack_require__(5);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var ifAlreadyExist = await checkIfExist(req.body.Name);
+
+        if (ifAlreadyExist.successful) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = ifAlreadyExist.message;
+
+            return res.status(400).json(result);
+        }
+
+        var createRes = await _country2.default.create(req.body);
+
+        result.successful = true;
+        result.model = createRes;
+        result.message = 'Successfully added record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.successful = false;
+        result.model = req.body;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getAll(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var searchItems = await _country2.default.find();
+
+        result.items = searchItems;
+        result.totalcount = searchItems.length;
+        result.pages = 1;
+        result.message = 'Succesfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = null;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function checkIfExist(name) {
+    var result = new _Result2.default();
+
+    try {
+        var cityRes = await _country2.default.find({ Name: name });
+
+        if (cityRes.length > 0) {
+            result.successful = true;
+            result.message = 'City already Exist';
+            return result;
+        } else {
+            result.successful = false;
+            result.message = 'City does not exist';
+
+            return result;
+        }
+    } catch (e) {
+        result.successful = false;
+        result.message = e;
+
+        return result;
+    }
+}
 
 /***/ }),
 /* 26 */
@@ -958,103 +897,8 @@ exports.default = routes;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getAll = exports.create = undefined;
-
-let create = exports.create = (() => {
-    var _ref = _asyncToGenerator(function* (req, res) {
-        var result = new _Result2.default();
-
-        try {
-            var ifAlreadyExist = yield checkIfExist(req.body.Name);
-
-            if (ifAlreadyExist.successful) {
-                result.successful = false;
-                result.model = req.body;
-                result.message = ifAlreadyExist.message;
-
-                return res.status(400).json(result);
-            }
-
-            var createRes = yield _state2.default.create(req.body);
-
-            result.successful = true;
-            result.model = createRes;
-            result.message = 'Successfully added record';
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.successful = false;
-            result.model = req.body;
-            result.message = e.errmsg;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function create(_x, _x2) {
-        return _ref.apply(this, arguments);
-    };
-})();
-
-let getAll = exports.getAll = (() => {
-    var _ref2 = _asyncToGenerator(function* (req, res) {
-        var result = new _SearchResult2.default();
-
-        try {
-            var searchItems = yield _state2.default.find();
-
-            result.items = searchItems;
-            result.totalcount = searchItems.length;
-            result.pages = 1;
-            result.message = 'Succesfully retrieve records';
-            result.successful = true;
-
-            return res.status(200).json(result);
-        } catch (e) {
-            result.items = null;
-            result.totalcount = 0;
-            result.pages = 1;
-            result.message = e.errmsg;
-            result.successful = false;
-
-            return res.status(500).json(result);
-        }
-    });
-
-    return function getAll(_x3, _x4) {
-        return _ref2.apply(this, arguments);
-    };
-})();
-
-let checkIfExist = (() => {
-    var _ref3 = _asyncToGenerator(function* (name) {
-        var result = new _Result2.default();
-
-        try {
-            var cityRes = yield _state2.default.find({ Name: name });
-
-            if (cityRes.length > 0) {
-                result.successful = true;
-                result.message = 'City already Exist';
-                return result;
-            } else {
-                result.successful = false;
-                result.message = 'City does not exist';
-
-                return result;
-            }
-        } catch (e) {
-            result.successful = false;
-            result.message = e;
-
-            return result;
-        }
-    });
-
-    return function checkIfExist(_x5) {
-        return _ref3.apply(this, arguments);
-    };
-})();
+exports.create = create;
+exports.getAll = getAll;
 
 var _state = __webpack_require__(29);
 
@@ -1074,7 +918,83 @@ var _QueryFilters = __webpack_require__(5);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+async function create(req, res) {
+    var result = new _Result2.default();
+
+    try {
+        var ifAlreadyExist = await checkIfExist(req.body.Name);
+
+        if (ifAlreadyExist.successful) {
+            result.successful = false;
+            result.model = req.body;
+            result.message = ifAlreadyExist.message;
+
+            return res.status(400).json(result);
+        }
+
+        var createRes = await _state2.default.create(req.body);
+
+        result.successful = true;
+        result.model = createRes;
+        result.message = 'Successfully added record';
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.successful = false;
+        result.model = req.body;
+        result.message = e.errmsg;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function getAll(req, res) {
+    var result = new _SearchResult2.default();
+
+    try {
+        var searchItems = await _state2.default.find();
+
+        result.items = searchItems;
+        result.totalcount = searchItems.length;
+        result.pages = 1;
+        result.message = 'Succesfully retrieve records';
+        result.successful = true;
+
+        return res.status(200).json(result);
+    } catch (e) {
+        result.items = null;
+        result.totalcount = 0;
+        result.pages = 1;
+        result.message = e.errmsg;
+        result.successful = false;
+
+        return res.status(500).json(result);
+    }
+}
+
+async function checkIfExist(name) {
+    var result = new _Result2.default();
+
+    try {
+        var cityRes = await _state2.default.find({ Name: name });
+
+        if (cityRes.length > 0) {
+            result.successful = true;
+            result.message = 'City already Exist';
+            return result;
+        } else {
+            result.successful = false;
+            result.message = 'City does not exist';
+
+            return result;
+        }
+    } catch (e) {
+        result.successful = false;
+        result.message = e;
+
+        return result;
+    }
+}
 
 /***/ }),
 /* 29 */
