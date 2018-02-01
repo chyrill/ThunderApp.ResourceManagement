@@ -2,6 +2,7 @@ import uploadRoutes from './upload/upload.routes';
 import CityRoutes from './city/city.routes';
 import CountryRoutes from './country/country.routes';
 import StateRoutes from './state/state.routes';
+import ToolsRoutes from './tools/tools.routes';
 
 export default app =>{
   app.use(function(req,res,next) {
@@ -13,4 +14,5 @@ export default app =>{
   app.use('/api/v1/city', CityRoutes);
   app.use('/api/v1/country', CountryRoutes);
   app.use('/api/v1/state', StateRoutes);
+  app.use('/api/v1/tools', ToolsRoutes);
 };

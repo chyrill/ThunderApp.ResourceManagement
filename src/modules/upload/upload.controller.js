@@ -1,6 +1,8 @@
 import Result from '../../helpers/Result';
 import multer from 'multer';
 import path from 'path';
+import mime from 'mime';
+import fs from 'fs';
 
 const storage = multer.diskStorage({
   destination: './public/uploads',
@@ -39,4 +41,18 @@ export async function bulkUpload(req,res) {
   catch (e){
 
   }
+}
+
+export async function download(req, res) {
+    
+    var file = 'public/uploads/' + req.params.filename;
+    
+    var filename = path.basename(file);
+    var mimetype = mime.lookup(file);
+    
+    res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+    res.setHeader('Content-type', mimetype);
+    
+    var filestream = fs.createReadStream(file);
+    filestream.pipe(res);
 }
